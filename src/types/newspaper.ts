@@ -62,6 +62,7 @@ export interface NewspaperColors {
 export interface TypographySettings {
   rubricaFont: string;
   headlineFont: string;
+  subheadFont: string;
   bodyFont: string;
   captionFont: string;
   headlineSize: number; // px

@@ -31,7 +31,14 @@ export default function App() {
     try {
       const saved = localStorage.getItem(STORAGE_DOC_KEY);
       if (saved) {
-        return JSON.parse(saved) as NewspaperDocument;
+        const parsed = JSON.parse(saved) as NewspaperDocument;
+        if (parsed.typography && !parsed.typography.subheadFont) {
+          parsed.typography.subheadFont =
+            parsed.typography.headlineFont === '"Lora", Georgia, serif'
+              ? '"DM Sans", sans-serif'
+              : '"Lora", Georgia, serif';
+        }
+        return parsed;
       }
     } catch {
       // Ignore corrupted local storage

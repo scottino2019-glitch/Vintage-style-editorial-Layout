@@ -287,10 +287,10 @@ ${customFaces}
 
 .gs-subhead {
   margin: 0;
-  font-family: ${typography.headlineFont};
+  font-family: ${typography.subheadFont || typography.captionFont};
   font-size: ${typography.subheadSize}px;
   font-weight: 600;
-  line-height: 1.18;
+  line-height: 1.2;
   color: ${colors.ink};
   text-wrap: balance;
 }

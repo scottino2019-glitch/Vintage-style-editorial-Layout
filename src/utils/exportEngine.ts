@@ -91,6 +91,7 @@ export function generateStandaloneHtml(
   const usedFamilies = [
     doc.typography.rubricaFont,
     doc.typography.headlineFont,
+    doc.typography.subheadFont,
     doc.typography.bodyFont,
     doc.typography.captionFont,
   ];

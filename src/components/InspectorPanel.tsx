@@ -1252,7 +1252,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         >
                           {cf.name}
                         </div>
-                        <div className="flex items-center gap-2.5 mt-1.5">
+                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1.5">
                           <button
                             type="button"
                             onClick={() =>
@@ -1267,6 +1267,22 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                             className="text-[13px] font-bold text-[#73180e] hover:underline"
                           >
                             Usa per Titolo
+                          </button>
+                          <span className="text-[#192b3b]">·</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onChangeDoc((prev) => ({
+                                ...prev,
+                                typography: {
+                                  ...prev.typography,
+                                  subheadFont: `"${cf.family}", serif`,
+                                },
+                              }))
+                            }
+                            className="text-[13px] font-bold text-[#73180e] hover:underline"
+                          >
+                            Usa per Sottotitolo
                           </button>
                           <span className="text-[#192b3b]">·</span>
                           <button
@@ -1306,10 +1322,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 Scelta Caratteri per Ruolo
               </h2>
 
-              {renderFontSelect('Font Titolo & Sottotitolo', doc.typography.headlineFont, (val) =>
+              {renderFontSelect('Font Titolo Principale', doc.typography.headlineFont, (val) =>
                 onChangeDoc((prev) => ({
                   ...prev,
                   typography: { ...prev.typography, headlineFont: val },
+                }))
+              )}
+
+              {renderFontSelect('Font Sottotitolo / Sommario', doc.typography.subheadFont, (val) =>
+                onChangeDoc((prev) => ({
+                  ...prev,
+                  typography: { ...prev.typography, subheadFont: val },
                 }))
               )}
 
