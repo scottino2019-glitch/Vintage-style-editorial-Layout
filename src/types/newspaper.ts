@@ -68,6 +68,9 @@ export interface TypographySettings {
   headlineSize: number; // px
   subheadSize: number; // px
   bodySize: number; // px
+  captionSize: number; // px
+  noteBoxSize: number; // px
+  captionAlign: 'auto' | 'left' | 'center' | 'right';
   bodyLineHeight: number; // 1.2 - 1.9
   headlineLetterSpacing: number; // em (-0.04 to 0.12)
   textAlign: 'justify' | 'left';

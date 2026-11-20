@@ -153,6 +153,13 @@ export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
     ) : null;
 
     if (modules.captionPlacement === 'side-top' && !isWideStackedMedia) {
+      const sideMetaEl = (
+        <div className="gs-media-side-meta">
+          {captionEl ? <div>{captionEl}</div> : <div />}
+          {noteBoxEl}
+        </div>
+      );
+
       return (
         <div className="gs-media-module">
           <div
@@ -165,16 +172,15 @@ export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
             {grid.imagePosition === 'left' ? (
               <>
                 {photoEl}
-                <div>{captionEl}</div>
+                {sideMetaEl}
               </>
             ) : (
               <>
-                <div>{captionEl}</div>
+                {sideMetaEl}
                 {photoEl}
               </>
             )}
           </div>
-          {noteBoxEl}
         </div>
       );
     }

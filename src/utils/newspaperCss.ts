@@ -125,6 +125,9 @@ export function getImageFilterCss(mode: NewspaperDocument['mainImage']['filter']
 export function generateNewspaperCss(doc: NewspaperDocument, customFonts: CustomFont[]): string {
   const format = PAGE_FORMATS[doc.grid.pageFormat];
   const { colors, typography, grid, modules, texture } = doc;
+  const captionSize = typography.captionSize ?? 11.5;
+  const noteBoxSize = typography.noteBoxSize ?? 11;
+  const captionAlign = typography.captionAlign ?? 'auto';
   const paddingPx = Math.round((grid.marginMm / 25.4) * 96 * 0.72); // balanced screen/print scale
   const resolvedPattern: PaperPatternType =
     texture.paperPattern ??
@@ -345,15 +348,24 @@ ${customFaces}
 .gs-media-side-wrap {
   display: grid;
   gap: 10px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .gs-media-side-wrap--left {
-  grid-template-columns: minmax(0, 1fr) 31%;
+  grid-template-columns: minmax(0, 1fr) 34%;
 }
 
 .gs-media-side-wrap--right {
-  grid-template-columns: 31% minmax(0, 1fr);
+  grid-template-columns: 34% minmax(0, 1fr);
+}
+
+.gs-media-side-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 10px;
 }
 
 .gs-photo-frame {
@@ -381,25 +393,28 @@ ${customFaces}
 .gs-caption {
   margin: 0;
   font-family: ${typography.captionFont};
-  font-size: 11.5px;
-  line-height: 1.32;
+  font-size: ${captionSize}px;
+  line-height: 1.34;
   color: ${colors.ink};
+  overflow-wrap: break-word;
+  text-wrap: pretty;
 }
 
 .gs-caption--side {
-  text-align: right;
+  text-align: ${captionAlign === 'auto' ? 'right' : captionAlign};
   font-weight: 500;
   padding-top: 2px;
 }
 
 .gs-caption--side-left {
-  text-align: left;
+  text-align: ${captionAlign === 'auto' ? 'left' : captionAlign};
   font-weight: 500;
   padding-top: 2px;
 }
 
 .gs-caption--below {
   margin-top: 7px;
+  text-align: ${captionAlign === 'auto' ? 'center' : captionAlign};
   color: ${colors.mutedInk};
   font-style: italic;
   border-bottom: 1px solid ${colors.ruleColor};
@@ -412,47 +427,62 @@ ${customFaces}
   color: ${colors.noteBoxText};
   border: 1.5px solid ${colors.ink};
   border-radius: 6px;
-  padding: 8px 10px;
+  padding: 8px 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   box-shadow: 2px 2px 0 rgba(28, 25, 23, 0.16);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .gs-note-box--corner {
   position: relative;
-  margin-top: 12px;
+  width: min(240px, 100%);
+  margin: 12px auto 0 auto;
 }
 
 .gs-note-box--overlay-corner {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 116px;
-  z-index: 6;
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .gs-note-eyebrow {
-  font-family: ${typography.headlineFont};
-  font-size: 11px;
+  width: 100%;
+  font-family: ${typography.captionFont};
+  font-size: ${(noteBoxSize * 0.92).toFixed(1)}px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  line-height: 1.18;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
+  text-align: center;
   border-bottom: 1px solid rgba(28, 25, 23, 0.25);
   padding-bottom: 3px;
   margin-bottom: 4px;
+  overflow-wrap: anywhere;
 }
 
 .gs-note-title {
+  width: 100%;
   font-family: ${typography.captionFont};
-  font-size: 13px;
+  font-size: ${(noteBoxSize * 1.18).toFixed(1)}px;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.16;
+  text-align: center;
   margin-bottom: 2px;
+  overflow-wrap: break-word;
 }
 
 .gs-note-body {
+  width: 100%;
   font-family: ${typography.captionFont};
-  font-size: 10.5px;
+  font-size: ${(noteBoxSize * 0.92).toFixed(1)}px;
   line-height: 1.25;
+  text-align: center;
+  overflow-wrap: break-word;
 }
 
 /* Article Prose & Columns */

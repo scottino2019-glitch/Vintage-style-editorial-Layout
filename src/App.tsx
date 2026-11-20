@@ -32,11 +32,22 @@ export default function App() {
       const saved = localStorage.getItem(STORAGE_DOC_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as NewspaperDocument;
-        if (parsed.typography && !parsed.typography.subheadFont) {
-          parsed.typography.subheadFont =
-            parsed.typography.headlineFont === '"Lora", Georgia, serif'
-              ? '"DM Sans", sans-serif'
-              : '"Lora", Georgia, serif';
+        if (parsed.typography) {
+          if (!parsed.typography.subheadFont) {
+            parsed.typography.subheadFont =
+              parsed.typography.headlineFont === '"Lora", Georgia, serif'
+                ? '"DM Sans", sans-serif'
+                : '"Lora", Georgia, serif';
+          }
+          if (typeof parsed.typography.captionSize !== 'number') {
+            parsed.typography.captionSize = 11.5;
+          }
+          if (typeof parsed.typography.noteBoxSize !== 'number') {
+            parsed.typography.noteBoxSize = 11;
+          }
+          if (!parsed.typography.captionAlign) {
+            parsed.typography.captionAlign = 'auto';
+          }
         }
         return parsed;
       }

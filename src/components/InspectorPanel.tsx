@@ -785,8 +785,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 />
               </label>
 
-              <div className="space-y-1.5">
-                <label className="block text-[13px] font-bold text-[#091017]">Didascalia</label>
+              <div className="space-y-2">
+                <label className="block text-[13px] font-bold text-[#091017]">
+                  Descrizione foto / Didascalia
+                </label>
                 <textarea
                   rows={2}
                   value={doc.content.mainCaption}
@@ -798,6 +800,56 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   }
                   className={INPUT_CLASS}
                 />
+                <div className="grid grid-cols-2 gap-3 pt-0.5">
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[12px]">
+                      <span className="font-bold text-[#091017]">Grandezza testo</span>
+                      <span className="font-bold text-[#091017] tabular-nums">
+                        {(doc.typography.captionSize ?? 11.5).toFixed(1)} px
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={9}
+                      max={18}
+                      step={0.5}
+                      value={doc.typography.captionSize ?? 11.5}
+                      onChange={(e) =>
+                        onChangeDoc((prev) => ({
+                          ...prev,
+                          typography: {
+                            ...prev.typography,
+                            captionSize: Number(e.target.value),
+                          },
+                        }))
+                      }
+                      className="w-full accent-[#73180e]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[12px] font-bold text-[#091017]">
+                      Allineamento
+                    </label>
+                    <select
+                      value={doc.typography.captionAlign ?? 'auto'}
+                      onChange={(e) =>
+                        onChangeDoc((prev) => ({
+                          ...prev,
+                          typography: {
+                            ...prev.typography,
+                            captionAlign: e.target.value as 'auto' | 'left' | 'center' | 'right',
+                          },
+                        }))
+                      }
+                      className="w-full rounded-md border-2 border-[#192b3b] bg-[#d5dfe6] px-2 py-1 text-xs font-bold text-[#091017]"
+                    >
+                      <option value="auto">Automatico</option>
+                      <option value="center">Centrato</option>
+                      <option value="left">Sinistra</option>
+                      <option value="right">Destra</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1136,6 +1188,33 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     placeholder="Testo breve nota"
                     className={INPUT_CLASS}
                   />
+                  <div className="space-y-1 pt-0.5">
+                    <div className="flex justify-between text-[12px]">
+                      <span className="font-bold text-[#091017]">
+                        Grandezza didascalia gialla / riquadro
+                      </span>
+                      <span className="font-bold text-[#091017] tabular-nums">
+                        {(doc.typography.noteBoxSize ?? 11).toFixed(1)} px
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={8.5}
+                      max={16}
+                      step={0.5}
+                      value={doc.typography.noteBoxSize ?? 11}
+                      onChange={(e) =>
+                        onChangeDoc((prev) => ({
+                          ...prev,
+                          typography: {
+                            ...prev.typography,
+                            noteBoxSize: Number(e.target.value),
+                          },
+                        }))
+                      }
+                      className="w-full accent-[#73180e]"
+                    />
+                  </div>
                 </div>
               )}
             </section>
@@ -1425,6 +1504,52 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     onChangeDoc((prev) => ({
                       ...prev,
                       typography: { ...prev.typography, bodySize: Number(e.target.value) },
+                    }))
+                  }
+                  className="w-full accent-[#73180e]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[13px]">
+                  <span className="font-bold text-[#091017]">Corpo descrizione foto</span>
+                  <span className="font-bold text-[#091017] tabular-nums">
+                    {(doc.typography.captionSize ?? 11.5).toFixed(1)} px
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={9}
+                  max={18}
+                  step={0.5}
+                  value={doc.typography.captionSize ?? 11.5}
+                  onChange={(e) =>
+                    onChangeDoc((prev) => ({
+                      ...prev,
+                      typography: { ...prev.typography, captionSize: Number(e.target.value) },
+                    }))
+                  }
+                  className="w-full accent-[#73180e]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[13px]">
+                  <span className="font-bold text-[#091017]">Corpo didascalia gialla / nota</span>
+                  <span className="font-bold text-[#091017] tabular-nums">
+                    {(doc.typography.noteBoxSize ?? 11).toFixed(1)} px
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={8.5}
+                  max={16}
+                  step={0.5}
+                  value={doc.typography.noteBoxSize ?? 11}
+                  onChange={(e) =>
+                    onChangeDoc((prev) => ({
+                      ...prev,
+                      typography: { ...prev.typography, noteBoxSize: Number(e.target.value) },
                     }))
                   }
                   className="w-full accent-[#73180e]"
