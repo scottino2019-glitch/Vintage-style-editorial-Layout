@@ -1,0 +1,6 @@
+{
+  "name": "Gazzetta Studio",
+  "description": "Studio tipografico modulare per impaginare giornali cartacei vintage con griglie flessibili, font personalizzati ed esportazione in immagine e HTML.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
