@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Image as ImageIcon,
   Layers,
@@ -82,12 +82,50 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   onApplyTemplate,
 }) => {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [mainImgAspect, setMainImgAspect] = useState<number | null>(null);
 
   useEffect(() => {
-    if (activeFocus && sectionRefs.current[activeFocus]) {
-      sectionRefs.current[activeFocus]?.scrollIntoView({
+    let cancelled = false;
+    const probe = new Image();
+    probe.onload = () => {
+      if (!cancelled && probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+        setMainImgAspect(probe.naturalWidth / probe.naturalHeight);
+      }
+    };
+    probe.onerror = () => {
+      if (!cancelled) setMainImgAspect(null);
+    };
+    probe.src = doc.mainImage.src;
+    return () => {
+      cancelled = true;
+    };
+  }, [doc.mainImage.src]);
+
+  const frameAspect =
+    doc.grid.imageAspectRatio === '3/4'
+      ? 3 / 4
+      : doc.grid.imageAspectRatio === '1/1'
+        ? 1
+        : doc.grid.imageAspectRatio === '4/3'
+          ? 4 / 3
+          : 16 / 9;
+
+  const hasNaturalHorizontalSlack =
+    mainImgAspect !== null && mainImgAspect > frameAspect + 0.02;
+  const hasNaturalVerticalSlack =
+    mainImgAspect !== null && mainImgAspect < frameAspect - 0.02;
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    const target = activeFocus ? sectionRefs.current[activeFocus] : null;
+    if (container && target) {
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      const nextTop = container.scrollTop + (targetRect.top - containerRect.top) - 12;
+      container.scrollTo({
+        top: Math.max(0, nextTop),
         behavior: 'smooth',
-        block: 'nearest',
       });
     }
   }, [activeFocus, activeTab]);
@@ -149,9 +187,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     'newsprint';
 
   return (
-    <aside className="flex flex-col h-full bg-[#35546e] border-r-2 border-[#192b3b] w-full lg:w-[440px] xl:w-[460px] shrink-0">
+    <aside className="flex flex-col flex-1 h-full min-h-0 bg-[#35546e] md:border-r-2 border-[#192b3b] w-full md:w-[350px] lg:w-[420px] xl:w-[450px] shrink-0">
       {/* Segmented Tab Navigation */}
-      <div className="p-3.5 border-b-2 border-[#192b3b] bg-[#c7d5e2]">
+      <div className="shrink-0 p-3.5 border-b-2 border-[#192b3b] bg-[#c7d5e2]">
         <div className="grid grid-cols-4 gap-1.5 p-1 rounded-lg bg-[#35546e] border-2 border-[#192b3b]">
           {(
             [
@@ -183,7 +221,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       </div>
 
       {/* Scrollable Inspector Body */}
-      <div className="flex-1 overflow-y-auto studio-scroll p-4 space-y-4">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain studio-scroll p-4 space-y-4"
+      >
         {activeTab === 'modelli' && (
           <>
             <section className={PANEL_CARD_CLASS}>
@@ -729,7 +770,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 </button>
               </div>
 
-              <label className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-lg border-2 border-dashed border-[#192b3b] bg-[#d5dfe6] hover:bg-[#e3b448] cursor-pointer text-sm font-bold text-[#091017] transition-colors">
+              <label className="relative overflow-hidden flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-lg border-2 border-dashed border-[#192b3b] bg-[#d5dfe6] hover:bg-[#e3b448] cursor-pointer text-sm font-bold text-[#091017] transition-colors">
                 <Upload className="w-4 h-4 text-[#73180e]" />
                 <span>Carica immagine personale</span>
                 <input
@@ -804,49 +845,84 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="block text-[13px] font-bold text-[#091017]">
-                    Inquadratura X
-                  </label>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={doc.mainImage.objectPositionX}
-                    onChange={(e) =>
-                      onChangeDoc((prev) => ({
-                        ...prev,
-                        mainImage: {
-                          ...prev.mainImage,
-                          objectPositionX: Number(e.target.value),
-                        },
-                      }))
-                    }
-                    className="w-full accent-[#73180e]"
-                  />
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-[13px] font-bold text-[#091017]">
+                      Inquadratura X ({doc.mainImage.objectPositionX}%)
+                    </label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={doc.mainImage.objectPositionX}
+                      onChange={(e) => {
+                        const nextX = Number(e.target.value);
+                        onChangeDoc((prev) => ({
+                          ...prev,
+                          mainImage: {
+                            ...prev.mainImage,
+                            objectPositionX: nextX,
+                            zoom:
+                              prev.mainImage.zoom <= 1.01 && !hasNaturalHorizontalSlack
+                                ? 1.2
+                                : prev.mainImage.zoom,
+                          },
+                        }));
+                      }}
+                      className="w-full accent-[#73180e]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[13px] font-bold text-[#091017]">
+                      Inquadratura Y ({doc.mainImage.objectPositionY}%)
+                    </label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={doc.mainImage.objectPositionY}
+                      onChange={(e) => {
+                        const nextY = Number(e.target.value);
+                        onChangeDoc((prev) => ({
+                          ...prev,
+                          mainImage: {
+                            ...prev.mainImage,
+                            objectPositionY: nextY,
+                            zoom:
+                              prev.mainImage.zoom <= 1.01 && !hasNaturalVerticalSlack
+                                ? 1.2
+                                : prev.mainImage.zoom,
+                          },
+                        }));
+                      }}
+                      className="w-full accent-[#73180e]"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="block text-[13px] font-bold text-[#091017]">
-                    Inquadratura Y
-                  </label>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={doc.mainImage.objectPositionY}
-                    onChange={(e) =>
-                      onChangeDoc((prev) => ({
-                        ...prev,
-                        mainImage: {
-                          ...prev.mainImage,
-                          objectPositionY: Number(e.target.value),
-                        },
-                      }))
-                    }
-                    className="w-full accent-[#73180e]"
-                  />
-                </div>
+                {(doc.mainImage.zoom > 1 ||
+                  doc.mainImage.objectPositionX !== 50 ||
+                  doc.mainImage.objectPositionY !== 50) && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onChangeDoc((prev) => ({
+                          ...prev,
+                          mainImage: {
+                            ...prev.mainImage,
+                            objectPositionX: 50,
+                            objectPositionY: 50,
+                            zoom: 1,
+                          },
+                        }))
+                      }
+                      className="px-2.5 py-1 rounded bg-[#d5dfe6] border border-[#192b3b] text-[12px] font-bold text-[#091017] hover:bg-[#e3b448]"
+                    >
+                      Centra inquadratura (50% / 1×)
+                    </button>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -875,7 +951,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               {doc.modules.showInsetPortrait && (
                 <>
                   <div className="flex items-center gap-2">
-                    <label className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border-2 border-dashed border-[#192b3b] bg-[#d5dfe6] hover:bg-[#e3b448] cursor-pointer text-sm font-bold text-[#091017]">
+                    <label className="relative overflow-hidden flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg border-2 border-dashed border-[#192b3b] bg-[#d5dfe6] hover:bg-[#e3b448] cursor-pointer text-sm font-bold text-[#091017]">
                       <Upload className="w-4 h-4 text-[#73180e]" />
                       <span>Carica foto tondo</span>
                       <input
@@ -1142,7 +1218,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 </p>
               </div>
 
-              <label className="flex flex-col items-center justify-center gap-1.5 w-full py-4 px-3 rounded-lg border-2 border-dashed border-[#192b3b] bg-[#d5dfe6] hover:bg-[#e3b448] cursor-pointer text-center transition-colors">
+              <label className="relative overflow-hidden flex flex-col items-center justify-center gap-1.5 w-full py-4 px-3 rounded-lg border-2 border-dashed border-[#192b3b] bg-[#d5dfe6] hover:bg-[#e3b448] cursor-pointer text-center transition-colors">
                 <Upload className="w-5 h-5 text-[#73180e]" />
                 <span className="text-sm font-bold text-[#091017]">
                   Scegli uno o più file font dal dispositivo

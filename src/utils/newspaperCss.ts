@@ -370,11 +370,12 @@ ${customFaces}
 .gs-photo-frame--16-9 { aspect-ratio: 16 / 9; }
 
 .gs-photo-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-  transform-origin: center center;
 }
 
 .gs-caption {

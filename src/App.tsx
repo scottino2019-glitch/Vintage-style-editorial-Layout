@@ -58,6 +58,8 @@ export default function App() {
   const [fitScale, setFitScale] = useState(0.75);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [mobilePane, setMobilePane] = useState<'editor' | 'preview'>('editor');
+  const [sheetMeasuredHeight, setSheetMeasuredHeight] = useState<number>(0);
   const [notice, setNotice] = useState<string | null>(null);
 
   const sheetRef = useRef<HTMLDivElement | null>(null);
@@ -106,7 +108,19 @@ export default function App() {
     const observer = new ResizeObserver(updateFit);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [doc.grid.pageFormat]);
+  }, [doc.grid.pageFormat, mobilePane]);
+
+  useEffect(() => {
+    const sheetEl = sheetRef.current;
+    if (!sheetEl) return;
+    const syncHeight = () => {
+      setSheetMeasuredHeight(sheetEl.offsetHeight);
+    };
+    syncHeight();
+    const observer = new ResizeObserver(syncHeight);
+    observer.observe(sheetEl);
+    return () => observer.disconnect();
+  }, [doc]);
 
   const showNotice = useCallback((msg: string) => {
     setNotice(msg);
@@ -120,6 +134,7 @@ export default function App() {
     () => PAGE_FORMATS[doc.grid.pageFormat],
     [doc.grid.pageFormat]
   );
+  const stageHeightPx = Math.max(currentSpec.heightPx, sheetMeasuredHeight);
 
   const handleApplyTemplate = useCallback(
     (templateId: LayoutTemplateId, loadSampleText: boolean) => {
@@ -208,9 +223,9 @@ export default function App() {
   }, [showNotice]);
 
   return (
-    <div className="min-h-screen lg:h-screen flex flex-col bg-[#c7d5e2] text-[#091017] lg:overflow-hidden">
+    <div className="h-dvh overflow-hidden flex flex-col bg-[#c7d5e2] text-[#091017] print:h-auto print:overflow-visible">
       {/* Strict 3-Zone Top Bar */}
-      <header className="no-print flex items-center justify-between gap-8 px-6 py-3.5 bg-[#c7d5e2] border-b-2 border-[#192b3b] shrink-0">
+      <header className="no-print flex items-center justify-between gap-4 sm:gap-8 px-4 sm:px-6 py-3 bg-[#c7d5e2] border-b-2 border-[#192b3b] shrink-0">
         {/* Zone 1: Single-line Brand Wordmark */}
         <span
           className="text-xl font-bold tracking-tight text-[#091017] whitespace-nowrap shrink-0"
@@ -264,9 +279,39 @@ export default function App() {
         </div>
       </header>
 
+      {/* Mobile View Switcher (below md so menu & sheet never stack as 2 pages) */}
+      <div className="no-print md:hidden grid grid-cols-2 gap-1.5 p-2 bg-[#35546e] border-b-2 border-[#192b3b] shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobilePane('editor')}
+          className={`py-2 px-3 rounded-md text-xs font-bold border-2 border-[#192b3b] transition-colors ${
+            mobilePane === 'editor'
+              ? 'bg-[#e3b448] text-[#091017]'
+              : 'bg-[#d5dfe6] text-[#091017]'
+          }`}
+        >
+          Menu Controlli
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobilePane('preview')}
+          className={`py-2 px-3 rounded-md text-xs font-bold border-2 border-[#192b3b] transition-colors ${
+            mobilePane === 'preview'
+              ? 'bg-[#e3b448] text-[#091017]'
+              : 'bg-[#d5dfe6] text-[#091017]'
+          }`}
+        >
+          Anteprima Foglio
+        </button>
+      </div>
+
       {/* Main Studio Split */}
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-        <div className="no-print h-auto lg:h-full">
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+        <div
+          className={`no-print ${
+            mobilePane === 'editor' ? 'flex' : 'hidden'
+          } md:flex flex-col flex-1 md:flex-initial min-h-0 md:h-full overflow-hidden shrink-0`}
+        >
           <InspectorPanel
             doc={doc}
             onChangeDoc={setDoc}
@@ -282,9 +327,13 @@ export default function App() {
         </div>
 
         {/* Center/Right Editorial Drafting Canvas */}
-        <main className="flex-1 flex flex-col min-w-0 min-h-[600px] lg:min-h-0 bg-[#284454]">
+        <main
+          className={`${
+            mobilePane === 'preview' ? 'flex' : 'hidden'
+          } md:flex flex-1 flex-col min-w-0 min-h-0 h-full overflow-hidden bg-[#284454]`}
+        >
           {/* Canvas Sub-Toolbar */}
-          <div className="no-print flex items-center justify-between gap-4 px-5 py-2.5 border-b-2 border-[#192b3b] bg-[#c7d5e2]">
+          <div className="no-print shrink-0 flex items-center justify-between gap-4 px-5 py-2.5 border-b-2 border-[#192b3b] bg-[#c7d5e2]">
             <div className="flex items-center gap-2.5 text-[13px] text-[#091017]">
               <span className="font-bold">{currentSpec.label}</span>
               <span aria-hidden="true">·</span>
@@ -358,7 +407,7 @@ export default function App() {
           {/* Scrollable Paper Desk */}
           <div
             ref={stageContainerRef}
-            className="relative flex-1 overflow-auto studio-scroll flex justify-center items-start p-6 sm:p-8"
+            className="relative flex-1 min-h-0 overflow-auto overscroll-contain studio-scroll flex justify-center items-start p-6 sm:p-8"
           >
             {notice && (
               <div className="no-print fixed bottom-5 right-5 z-40 px-4 py-2.5 rounded-lg bg-[#e3b448] border-2 border-[#192b3b] text-[#091017] text-[13px] font-bold shadow-xl">
@@ -369,7 +418,7 @@ export default function App() {
             <div
               style={{
                 width: `${Math.round(currentSpec.widthPx * currentScale)}px`,
-                height: `${Math.round(currentSpec.heightPx * currentScale)}px`,
+                height: `${Math.round(stageHeightPx * currentScale)}px`,
                 flexShrink: 0,
               }}
             >

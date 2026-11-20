@@ -16,12 +16,18 @@
 
   html,
   body {
+    margin: 0;
+    height: 100%;
     background-color: var(--studio-bg);
     color: var(--studio-ink);
     font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 15px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    height: 100%;
   }
 
   button:focus-visible,
@@ -52,6 +58,13 @@
 }
 
 @media print {
+  html,
+  body,
+  #root {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   .no-print {
     display: none !important;
   }

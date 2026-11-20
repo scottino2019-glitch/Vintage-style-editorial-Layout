@@ -108,6 +108,7 @@ export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
           referrerPolicy="no-referrer"
           style={{
             objectPosition: `${mainImage.objectPositionX}% ${mainImage.objectPositionY}%`,
+            transformOrigin: `${mainImage.objectPositionX}% ${mainImage.objectPositionY}%`,
             transform: `scale(${mainImage.zoom})`,
             filter: getImageFilterCss(mainImage.filter),
           }}
@@ -213,6 +214,7 @@ export const NewspaperSheet: React.FC<NewspaperSheetProps> = ({
             referrerPolicy="no-referrer"
             style={{
               objectPosition: `${insetImage.objectPositionX}% ${insetImage.objectPositionY}%`,
+              transformOrigin: `${insetImage.objectPositionX}% ${insetImage.objectPositionY}%`,
               transform: `scale(${insetImage.zoom})`,
               filter: getImageFilterCss(insetImage.filter),
             }}
